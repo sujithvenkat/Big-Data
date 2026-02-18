@@ -2,14 +2,32 @@ import os
 
 from pyspark import StorageLevel
 
+os.environ['HADOOP_HOME'] = "C:\\winutils"
+os.environ["PATH"] += os.pathsep + os.path.join(os.environ["HADOOP_HOME"], "bin")
 os.environ["PYSPARK_PYTHON"] = "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
 os.environ["PYSPARK_DRIVER_PYTHON"] = "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+
+ '''RUN THIS in TERMINAL REPL BELOW'''
 
 from pyspark.sql import SparkSession
 def masking(str_to_mask):
     return hash(str_to_mask)
 def main():
     spark=SparkSession.builder.appName("Venky").master('local[2]').getOrCreate()
+    sc=spark.sparkContext
+    sc.setLogLevel("Error")
+    filerdd=sc.textFile("E:\\BigData\\Shared_Documents\\sample_data\\sparkdata\\youtube_videos.tsv")
+    filerdd_split=filerdd.map(lambda x:x.split("\t"))
+    filerdd_first=filerdd_split.first()
+    filerdd_rem_hdr=filerdd_split.filter(lambda x:x != filerdd_first)
+    musicrdd=filerdd_rem_hdr.filter(lambda x:x[9] == 'Music')
+    longdurdd=filerdd_rem_hdr.filter(lambda x:x[1] > 100)
+    music_longdur=musicrdd.union(longdurdd).distinct()
+
+
+
+
+
     izsc=spark.sparkContext
     izsc.setLogLevel("Error")
     print(izsc.appName)
